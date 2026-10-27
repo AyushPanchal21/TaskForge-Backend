@@ -1,13 +1,29 @@
-import type{ Request,Response } from "express"
+import type { Request, Response } from "express"
+import { userRepository } from "./user_repository.js";
+import { UserService } from "./user_service.js";
 
-export const createUser = (req:Request,res:Response)=>{
-    try{
-        const {username,email,password} = res.locals.validatedBody;
+const userRepo = new userRepository();
+const userService = new UserService(userRepo);
 
-        return res.status(200).json({message:"success fully created user",success:true})
-    
-    }catch(err){
+export const createUser = async (req: Request, res: Response) => {
+    try {
+        const { username, email, password } = res.locals.validatedBody;
+
+        const result = await userService.createUser({
+            username,
+            email,
+            password
+        })
+
+        if (!result.success) {
+            return res.status(409).json(result);
+        }
+
+        return res.status(201).json(result);
+
+
+    } catch (err) {
         console.error(err)
-        res.status(500).json({message:"internal server error!"})
+        res.status(500).json({ message: "internal server error!" })
     }
 }
