@@ -8,12 +8,17 @@ export class userRepository {
     }
 
     async createUser(username: string, email: string, password: string) {
-        return await prisma.user.create({
+
+        const res = await prisma.user.create({
             data: {
                 username,
                 email,
                 password
+            },
+            select: {
+                email: true
             }
         });
+        return res.email;
     }
 }
