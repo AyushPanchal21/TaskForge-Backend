@@ -8,10 +8,49 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String
-  email     String   @unique
-  password  String
+  id                      String               @id @default(uuid())
+  username                String
+  email                   String               @unique
+  password                String
+  createdOrganizations    Organization[]       @relation("OrganizationCreator")
+  organizationMemberships OrganizationMember[]
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+}
+
+model Organization {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  createdById String
+  createdBy   User   @relation("OrganizationCreator", fields: [createdById], references: [id])
+
+  members OrganizationMember[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model OrganizationMember {
+  id String @id @default(uuid())
+
+  userId         String
+  organizationId String
+
+  role OrganizationRole @default(MEMBER)
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, organizationId])
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
