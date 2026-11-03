@@ -15,6 +15,8 @@ export const createOrganization = async (req: Request, res: Response) => {
             createdById
         })
 
+        console.log("createorg controller:",result)
+
         return res.status(201).json({
             message: "organization creation successfully",
             success: true
