@@ -14,6 +14,7 @@ model User {
   password                String
   createdOrganizations    Organization[]       @relation("OrganizationCreator")
   organizationMemberships OrganizationMember[]
+  createdProjects OrganizationProject[] @relation("ProjectCreator")
   createdAt               DateTime             @default(now())
   updatedAt               DateTime             @updatedAt
 }
@@ -28,6 +29,7 @@ model Organization {
   createdBy   User   @relation("OrganizationCreator", fields: [createdById], references: [id])
 
   members OrganizationMember[]
+  projects OrganizationProject[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,12 +43,56 @@ model OrganizationMember {
 
   role OrganizationRole @default(MEMBER)
 
+  ledProjects OrganizationProject[] @relation("ProjectLead")
+
   user         User         @relation(fields: [userId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id])
+
+  projects ProjectMember[]
 
   joinedAt DateTime @default(now())
 
   @@unique([userId, organizationId])
+}
+
+model OrganizationProject {
+  id String @id @default(uuid())
+
+  projectName String
+  projectDescription String?
+
+  projectLeadId String
+  createdById String
+  organizationId String
+
+  projectLead OrganizationMember @relation("ProjectLead",fields: [projectLeadId], references: [id])
+
+  createdBy User @relation("ProjectCreator",fields: [createdById],references: [id])
+
+  organization Organization @relation(fields: [organizationId],references: [id])
+
+  members ProjectMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, projectName])
+  @@index([organizationId])
+}
+
+model ProjectMember {
+  id String @id @default(uuid())
+
+  projectId String
+  organizationMemberId String
+
+  project OrganizationProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  organizationMember OrganizationMember @relation(fields: [organizationMemberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, organizationMemberId])
 }
 
 enum OrganizationRole {
