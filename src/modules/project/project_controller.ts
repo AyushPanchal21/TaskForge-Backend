@@ -1,18 +1,18 @@
-import type { Request, Response ,NextFunction} from "express"
+import type { Request, Response} from "express"
 import { projectRepository } from "./project_repository.js"
 import { projectService } from "./project_service.js"
+import { AppError } from "../../errors/app_error.js"
 
 const projectRepo = new projectRepository()
 const projectservice = new projectService(projectRepo)
 
-export const createProject = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const createProject = async (req: Request, res: Response) => {
         const { projectName, projectDescription, projectLeadId } = res.locals.validatedBody;
         const organizationId = req.params.organizationId;
         const createdById = res.locals.userId
 
         if(typeof organizationId !== "string"){
-            return res.status(400).json({message:"invalid organization id",success:false})
+            throw new AppError("invalid organization id",400)
         }
         const result = await projectservice.createProject({
             projectName,
@@ -22,12 +22,8 @@ export const createProject = async (req: Request, res: Response, next: NextFunct
             organizationId
         })
 
-        return res.status(201).json({
-            message: "created a project successfully",
-            success: true
+        return res.status(result.statusCode).json({
+            message: result.message,
+            success: result.success
         })
-
-    } catch (err) {
-       next(err)
-    }
 }
