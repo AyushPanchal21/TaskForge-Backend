@@ -1,4 +1,5 @@
 import { organizationRepository } from "./organization_repository.js";
+import { AppError } from "../../errors/app_error.js";
 
 export class organizationService {
     constructor(private organizationRepo: organizationRepository) { }
@@ -17,44 +18,33 @@ export class organizationService {
                 description: data.description
             })
         })
-        return organization
+        return {
+            success: true,
+            message: "Organization created successfully",
+            statusCode: 201,
+            data: organization
+        };
     }
 
     async addMember(organizationId: string, requesterId: string, email: string) {
         const orgCheck = await this.organizationRepo.findOrganizationById(organizationId)
         if (!orgCheck) {
-            return {
-                message: "Organization not found",
-                success: false,
-                statusCode: 404
-            };
+            throw new AppError("Organization not found", 404)
         }
 
         const memberRoleCheck = await this.organizationRepo.findOrganizationMember(requesterId, organizationId)
         if (!memberRoleCheck || (memberRoleCheck.role !== "OWNER" && memberRoleCheck.role !== "ADMIN")) {
-            return {
-                success: false,
-                message: "You don't have permission to add members",
-                statusCode: 403
-            };
+            throw new AppError("You don't have permission to add members", 403)
         }
 
         const user = await this.organizationRepo.findUserByEmail(email);
         if (!user) {
-            return {
-                success: false,
-                message: "User not found",
-                statusCode: 404
-            };
+            throw new AppError("User not found", 404)
         }
 
         const existingMember = await this.organizationRepo.findOrganizationMember(user.id, organizationId)
         if (existingMember) {
-            return {
-                success: false,
-                message: "User is already a member of this organization",
-                statusCode: 409
-            };
+            throw new AppError("User is already a member of this organization", 409)
         }
 
         const newMember = await this.organizationRepo.addOrganizationMember(user.id, organizationId)
@@ -66,49 +56,29 @@ export class organizationService {
         };
     }
 
-    async removeMember(organizationId: string,requesterId:string, email: string) {
+    async removeMember(organizationId: string, requesterId: string, email: string) {
         const orgCheck = await this.organizationRepo.findOrganizationById(organizationId)
         if (!orgCheck) {
-            return {
-                message: "Organization not found",
-                success: false,
-                statusCode: 404
-            };
+            throw new AppError("organization not found", 404)
         }
 
         const memberRoleCheck = await this.organizationRepo.findOrganizationMember(requesterId, organizationId)
         if (!memberRoleCheck || (memberRoleCheck.role !== "OWNER" && memberRoleCheck.role !== "ADMIN")) {
-            return {
-                success: false,
-                message: "You don't have permission to remove members",
-                statusCode: 403
-            };
+            throw new AppError("You don't have permission to remove members", 403)
         }
 
         const user = await this.organizationRepo.findUserByEmail(email);
         if (!user) {
-            return {
-                success: false,
-                message: "User is not a member of this organization",
-                statusCode: 404
-            };
+            throw new AppError("User not found", 404)
         }
 
         const existingMember = await this.organizationRepo.findOrganizationMember(user.id, organizationId)
         if (!existingMember) {
-            return {
-                success: false,
-                message: "No such User Found",
-                statusCode: 404
-            };
+            throw new AppError("User is not a member of this organization", 404)
         }
 
         if (existingMember.role === "OWNER") {
-            return {
-                success: false,
-                message: "Organization owner cannot be removed",
-                statusCode: 403
-            };
+            throw new AppError("Organization owner cannot be removed", 403)
         }
 
         const removemember = await this.organizationRepo.removeOrganizationMember(user.id, organizationId)
