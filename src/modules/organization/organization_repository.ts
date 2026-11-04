@@ -49,6 +49,17 @@ export class organizationRepository {
         });
     }
 
+    async removeOrganizationMember(userId: string, organizationId: string) {
+        return await prisma.organizationMember.delete({
+            where: {
+                userId_organizationId: {
+                    userId,
+                    organizationId
+                }
+            }
+        })
+    }
+
     async findOrganizationById(organizationId: string) {
         return await prisma.organization.findUnique({
             where: {
@@ -79,6 +90,6 @@ export class organizationRepository {
                 username: true
             }
         });
-        return rews; 
+        return rews;
     }
 }
