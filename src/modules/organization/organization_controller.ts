@@ -39,6 +39,7 @@ export const addMembers = async (req: Request, res: Response) => {
                 success: false
             });
         }
+
         const result = await orgservice.addMember(
             organizationId,
             requesterId,
@@ -47,6 +48,31 @@ export const addMembers = async (req: Request, res: Response) => {
 
         return res.status(result.statusCode).json(result);
     } catch (err) {
+        console.error(err)
+        return res.status(500).json({ message: "Internal server error", success: false })
+    }
+}
+
+export const removeMembers = async(req:Request,res:Response)=>{
+    try{
+         const organizationId = req.params.organizationId;
+         const requesterId = res.locals.userId;
+        const { email } = res.locals.validatedBody;
+
+        if (typeof organizationId !== "string") {
+            return res.status(400).json({
+                message: "Invalid organization ID",
+                success: false
+            });
+        }
+
+        const result = await orgservice.removeMember(
+            organizationId,
+            requesterId,
+            email
+        )
+        return res.status(result.statusCode).json({message:result.message,success:result.success})
+    }catch(err){
         console.error(err)
         return res.status(500).json({ message: "Internal server error", success: false })
     }
