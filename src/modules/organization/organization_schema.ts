@@ -8,3 +8,7 @@ export const createOrganizationSchema = z.object({
 export const addMembersSchema = z.object({
     email: z.email().trim().toLowerCase(),
 })
+
+export const removeMembersSchema = z.object({
+    email: z.email().trim().toLowerCase(),
+})
