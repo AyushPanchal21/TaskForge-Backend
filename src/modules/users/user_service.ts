@@ -17,14 +17,16 @@ export class UserService {
         }
 
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        await this.userRepo.createUser(
+       const user =  await this.userRepo.createUser(
             data.username,
             normalizeEmail,
             hashedPassword
         );
         return {
+            success: true,
             message: "user created",
-            success: true
+            statusCode: 201,
+            data: user
         }
     }
 
@@ -57,7 +59,8 @@ export class UserService {
             message: "user LoggedIn",
             success: true,
             accesstoken,
-            refreshtoken
+            refreshtoken,
+            statusCode: 200,
         }
     }
 }
