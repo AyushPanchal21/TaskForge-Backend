@@ -33,7 +33,7 @@ export class projectService {
             data.organizationId
         );
         if (!projectLead) {
-            throw new AppError("Project lead is not a member of this organization",400);
+            throw new AppError("Project lead is not a member of this organization",404);
         }
 
         const existingProject = await this.projectRepo.findProjectByName(
@@ -45,6 +45,11 @@ export class projectService {
         }
 
         const project = await this.projectRepo.createProject(data);
-        return project;
+        return {
+            success:true,
+            message:"created a project successfully",
+            statusCode:201,
+            data:project
+        } 
     }
 }
